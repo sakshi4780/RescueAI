@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>RescueAI: Cart Abandonment Rescue</title>
+<style>
+:root{--bg:#f6f5f1;--card:#fff;--ink:#1c1b19;--mut:#6b6860;--line:#e4e1d8;--acc:#d9480f;--ok:#2b8a3e;--bad:#c92a2a;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#161513;--card:#201f1c;--ink:#f1efe8;--mut:#a29f95;--line:#34322d;--acc:#ff8c4a;--ok:#69db7c;--bad:#ff8787}}
+:root[data-theme="dark"]{--bg:#161513;--card:#201f1c;--ink:#f1efe8;--mut:#a29f95;--line:#34322d;--acc:#ff8c4a;--ok:#69db7c;--bad:#ff8787}
+*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.5 system-ui,-apple-system,"Segoe UI",sans-serif}
+.w{max-width:1000px;margin:0 auto;padding:20px 16px 40px}
+h1{font-size:24px;margin:0}h2{font-size:16px;margin:0 0 10px}.sub{color:var(--mut);margin:2px 0 14px}
+.tabs{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}
+.tabs button,.pre button{border:1px solid var(--line);background:var(--card);color:var(--ink);padding:8px 14px;border-radius:999px;cursor:pointer;font:inherit}
+.tabs button.on{background:var(--acc);border-color:var(--acc);color:#fff}
+.g{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:760px){.g{grid-template-columns:1fr}}
+.c{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:16px}
+.r{margin-bottom:11px}.r label{display:flex;justify-content:space-between;font-size:13px;color:var(--mut)}.r label b{color:var(--ink)}
+input[type=range]{width:100%;accent-color:var(--acc)}
+.pre{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:12px}
+.big{font-size:44px;font-weight:700;line-height:1}
+.bar{height:10px;background:var(--line);border-radius:6px;overflow:hidden;margin:8px 0}.bar i{display:block;height:100%;background:var(--bad)}
+.rec{border-left:4px solid var(--ok);padding:8px 12px;background:color-mix(in srgb,var(--ok) 10%,transparent);border-radius:6px;margin-top:10px}
+.no{color:var(--bad)}.m{color:var(--mut);font-size:13px}
+.ct{display:grid;grid-template-columns:130px 1fr 44px;gap:8px;align-items:center;font-size:12.5px;margin:3px 0}
+.ct s{display:block;height:8px;border-radius:4px;text-decoration:none}
+.k{display:grid;grid-template-columns:1fr 1fr;gap:10px}.k div{border:1px solid var(--line);border-radius:10px;padding:10px}.k b{display:block;font-size:20px}
+.shop{display:flex;gap:12px;align-items:center;border:1px dashed var(--line);border-radius:10px;padding:10px;margin-bottom:12px}
+.shop span.i{font-size:34px}
+ul{padding-left:18px;margin:6px 0}li{margin:3px 0}
+.hid{display:none}
+</style></head><body><div class="w">
+<h1>🛟 RescueAI</h1>
+<p class="sub">Predict checkout abandonment, then decide what the product should <i>do</i> about it. Simulated behavioural data.</p>
+<div class="tabs"><button class="on" data-t="sim">Live Customer Simulator</button><button data-t="biz">Business Impact</button><button data-t="about">How it works</button></div>
+
+<section id="sim"><div class="g">
+<div class="c"><h2>Customer behaviour</h2>
+<div class="shop"><span class="i">👟</span><div><b id="shopP"></b><div class="m">⭐ 4.3 · 🚚 <span id="shopD"></span></div></div></div>
+<div class="pre"><button onclick="preset('A')">User A: delivery doubts</button><button onclick="preset('B')">User B: price hunter</button><button onclick="preset('C')">User C: ready to buy</button></div>
+<div id="ctl"></div></div>
+<div class="c"><h2>🔮 AI prediction</h2>
+<div class="big" id="pa"></div><div class="m">abandonment probability · purchase probability <b id="pp"></b></div>
+<div class="bar"><i id="pb"></i></div>
+<div>Likely reason: <b id="rs"></b> <span class="m">(driver share <span id="cf"></span>)</span></div>
+<div class="rec" id="rc"></div>
+<h2 style="margin-top:16px">What pushed the score</h2><div id="cb"></div>
+<p class="m">Bars right of centre raise abandonment risk; left lowers it (log-odds contribution).</p></div>
+</div></section>
+
+<section id="biz" class="hid"><div class="g">
+<div class="c"><h2>Assumptions</h2>
+<div class="r"><label>Checkout sessions <b id="vS"></b></label><input type="range" id="S" min="1000" max="50000" step="1000" value="10000"></div>
+<div class="r"><label>Abandonment rate <b id="vR"></b></label><input type="range" id="R" min="5" max="50" value="20"></div>
+<div class="r"><label>Average order value (₹) <b id="vA"></b></label><input type="range" id="A" min="500" max="6000" step="50" value="2450"></div>
+<div class="r"><label>Discount offered <b id="vD"></b></label><input type="range" id="D" min="0" max="20" step="1" value="0"></div>
+<p class="m">Model: targeted fixes (delivery date, cheaper alternative) recover ~16% of abandoners with no discount. A discount adds recoveries with diminishing returns, but is also given to people who would have bought anyway (assumed 50% of abandoner count). These are assumptions to tune, not measured results.</p></div>
+<div class="c"><h2>Impact</h2>
+<div class="k" id="kp"></div>
+<div class="rec" id="bt"></div></div>
+</div></section>
+
+<section id="about" class="hid"><div class="c">
+<h2>Interview cheat-sheet</h2>
+<ul>
+<li><b>Problem:</b> carts get abandoned; blanket discounts burn margin. RescueAI estimates the most likely driver and picks the cheapest effective intervention.</li>
+<li><b>Data:</b> simulated behavioural sessions (price, time on product, shipping-page visits, price-comparison clicks, cart additions, checkout dwell, delivery promise). Real customer-level checkout data is not public.</li>
+<li><b>Model:</b> logistic scorer. The weights here are hand-set to mimic what a model trained on the simulated data would learn; swap in Random Forest/XGBoost trained with scikit-learn for production.</li>
+<li><b>Reason engine:</b> compares delivery, price and friction signals and reports the largest share. It estimates a <i>likely</i> driver, not a certain one.</li>
+<li><b>Evaluation to quote:</b> AUC / precision-recall for the predictor, and an A/B test on checkout conversion and net revenue per session for the intervention.</li>
+<li><b>North-star metric:</b> net incremental revenue = recovered revenue minus discount cost minus leakage.</li>
+<li><b>PM point:</b> a prediction is only useful if it changes what the product does. Intervention choice is the product.</li>
+</ul></div></section>
+</div>
+<script>
+const F=[{k:'price',l:'Product price (₹)',a:499,b:9999,s:100,v:2499},{k:'tprod',l:'Time on product (min)',a:0,b:10,s:.5,v:2},{k:'ship',l:'Shipping page visits',a:0,b:8,s:1,v:1},{k:'pcmp',l:'Price comparison clicks',a:0,b:10,s:1,v:0},{k:'cart',l:'Cart additions',a:0,b:4,s:1,v:1},{k:'tco',l:'Time on checkout (min)',a:0,b:6,s:.5,v:1},{k:'del',l:'Promised delivery (days)',a:1,b:7,s:1,v:1}];
+const P={A:{price:2499,tprod:1.5,ship:3,pcmp:0,cart:1,tco:2,del:4,co:1},B:{price:4999,tprod:3,ship:0,pcmp:5,cart:1,tco:1,del:2,co:1},C:{price:2499,tprod:5,ship:0,pcmp:0,cart:2,tco:0.5,del:1,co:1}};
+const st={};F.forEach(f=>st[f.k]=f.v);st.co=1;
+const $=id=>document.getElementById(id),inr=n=>'₹'+Math.round(n).toLocaleString('en-IN'),L=n=>'₹'+(n/1e5).toFixed(2)+' L';
+$('ctl').innerHTML=F.map(f=>`<div class="r"><label>${f.l}<b id="v_${f.k}"></b></label><input type="range" id="i_${f.k}" min="${f.a}" max="${f.b}" step="${f.s}"></div>`).join('')+`<div class="r"><label><span>Reached checkout</span><input type="checkbox" id="i_co" checked></label></div>`;
+F.forEach(f=>$('i_'+f.k).oninput=e=>{st[f.k]=+e.target.value;run()});
+$('i_co').onchange=e=>{st.co=e.target.checked?1:0;run()};
+function preset(n){Object.assign(st,P[n]);run()}
+function run(){
+ F.forEach(f=>{$('i_'+f.k).value=st[f.k];$('v_'+f.k).textContent=f.k=='price'?inr(st.price):st[f.k]});
+ $('i_co').checked=!!st.co;
+ const c={'Shipping visits':.8*st.ship,'Price comparisons':.4*st.pcmp,'Checkout dwell':.2*st.tco,'Price vs ₹2,500':.0006*(st.price-2500),'Delivery wait':.2*(st.del-1),'Cart additions':-.15*(st.cart-1),'Time on product':-.15*st.tprod,'Reached checkout':st.co?-.3:0};
+ const z=-1.6+Object.values(c).reduce((a,b)=>a+b,0),p=1/(1+Math.exp(-z));
+ const sc={d:.8*st.ship+.2*(st.del-1),pr:.4*st.pcmp+Math.max(0,st.price-2500)*.0006,f:.2*st.tco};
+ const mx=Math.max(.05,sc.d),sm=Math.max(.05,sc.d)+Math.max(.05,sc.pr)+Math.max(.05,sc.f);
+ const top=Object.keys(sc).sort((a,b)=>sc[b]-sc[a])[0],sh=Math.max(.05,sc[top])/sm;
+ const name={d:'Delivery uncertainty',pr:'Price sensitivity',f:'Checkout friction'}[top];
+ const alt=Math.round(st.price*.8/100)*100-1;
+ let rec;
+ if(p<.4){rec='✅ <b>Best intervention: none.</b> Low risk, so stay out of the way and protect margin.'}
+ else if(top=='d'){rec='💡 <b>Best intervention:</b> show a guaranteed delivery date on the checkout page.<br><span class="no">❌ Don\'t give a discount yet.</span>'}
+ else if(top=='pr'){rec=`🎯 <b>Best intervention:</b> show a ${inr(alt)} alternative.<br><span class="no">❌ Hold the discount as a last resort.</span>`}
+ else{rec='⚡ <b>Best intervention:</b> simplify checkout (guest checkout, saved UPI, fewer fields).<br><span class="no">❌ A discount won\'t fix friction.</span>'}
+ $('pa').textContent=Math.round(p*100)+'%';$('pp').textContent=Math.round((1-p)*100)+'%';$('pb').style.width=p*100+'%';
+ $('rs').textContent=p<.4?'No strong abandonment signal':name;$('cf').textContent=Math.round(sh*100)+'%';$('rc').innerHTML=rec;
+ $('shopP').textContent=inr(st.price);$('shopD').textContent=st.del==1?'Delivery tomorrow':'Delivery in '+st.del+' days';
+ $('cb').innerHTML=Object.entries(c).map(([k,v])=>{const w=Math.min(50,Math.abs(v)/3*50);return `<div class="ct"><span>${k}</span><div style="position:relative;height:8px;background:var(--line);border-radius:4px"><s style="position:absolute;width:${w}%;${v>=0?'left:50%;background:var(--bad)':'right:50%;background:var(--ok)'}"></s></div><span class="m">${v>=0?'+':''}${v.toFixed(1)}</span></div>`}).join('');
+}
+function biz(){
+ const S=+$('S').value,R=+$('R').value/100,A=+$('A').value,d=+$('D').value;
+ $('vS').textContent=S.toLocaleString('en-IN');$('vR').textContent=(R*100)+'%';$('vA').textContent=inr(A);$('vD').textContent=d+'%';
+ const ab=S*R,rate=.16+.14*(1-Math.exp(-d/5)),rec=ab*rate,gross=rec*A*(1-d/100),leak=.5*ab*(d/100)*A,net=gross-leak;
+ const base=.16*ab*A;
+ $('kp').innerHTML=`<div>Abandoned carts<b>${Math.round(ab).toLocaleString('en-IN')}</b></div><div>Recovered purchases<b>+${Math.round(rec).toLocaleString('en-IN')}</b></div><div>Recovery rate<b>${(rate*100).toFixed(1)}%</b></div><div>Checkout conversion<b>${((S-ab+rec)/S*100).toFixed(1)}%</b></div><div>Revenue recovered<b>${L(rec*A)}</b></div><div>Discount cost (given + leakage)<b>${L(rec*A*d/100+leak)}</b></div>`;
+ $('bt').innerHTML=`<b>Net incremental revenue: ${L(net)}</b><br><span class="m">${d==0?'No-discount baseline.':'Versus no-discount baseline ('+L(base)+'): '+(net>=base?'+':'−')+L(Math.abs(net-base))+'.'} Try 4–6%, then 20%, to see the margin trade-off.</span>`;
+}
+['S','R','A','D'].forEach(i=>$(i).oninput=biz);
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tabs button').forEach(x=>x.classList.toggle('on',x==b));['sim','biz','about'].forEach(t=>$(t).classList.toggle('hid',t!=b.dataset.t))});
+preset('A');biz();
+</script></body></html>
